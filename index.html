@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#00f2fe">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="THR Spinner">
+    <link rel="icon" href="data:,">
     <title>Spinner THR Anak Ceria ✨</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -440,7 +441,9 @@
             document.getElementById('modalEmoji').innerText = "💰";
             document.getElementById('modalTitle').innerText = "TOTAL THR!";
             prizeResult.innerText = `Rp ${totalWon.toLocaleString('id-ID')}`; prizeResult.style.color = "#f97316";
-            aiSection.classList.remove('hidden'); aiLoading.classList.remove('hidden'); aiText.innerText = "";
+            if (apiKey) {
+                aiSection.classList.remove('hidden'); aiLoading.classList.remove('hidden'); aiText.innerText = "";
+            }
             moneyStackDisplay.innerHTML = '';
             for(let i=0; i<Math.min(totalWon/1000, 15); i++) {
                 const n = document.createElement('div'); n.style.transform = `rotate(${Math.random()*40-20}deg)`;
@@ -449,6 +452,11 @@
             }
             document.getElementById('modalBtn').innerText = "MAIN LAGI 🔄";
             document.getElementById('modalBtn').onclick = () => { location.reload(); };
+
+            if (!apiKey) {
+                // Skip AI features if no API key
+                return;
+            }
 
             try {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
