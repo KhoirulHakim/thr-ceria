@@ -439,8 +439,7 @@
                 const res = await fetchWithRetry(url, {
                     method: "POST",
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Berikan pesan selamat singkat, hangat, dan nasihat menabung untuk anak yang dapat THR Rp ${totalWon.toLocaleString('id-ID')}. Jangan sebut namamu. Selalu akhiri pesanmu dengan ucapan Selamat Hari Raya Idul Fitri yang sangat hangat dan personal.` }] }],
-                        systemInstruction: { parts: [{ text: "Kamu adalah kakak yang sangat ramah bagi anak Indonesia. Jangan sebut namamu. Setiap pesan yang kamu berikan HARUS diakhiri dengan ucapan Selamat Hari Raya Idul Fitri yang tulus dan personal (misal: mohon maaf lahir dan batin)." }] }
+                        contents: [{ parts: [{ text: `Kamu adalah kakak yang sangat ramah bagi anak Indonesia. Jangan sebut namamu. Berikan pesan selamat singkat, hangat, dan nasihat menabung untuk anak yang dapat THR Rp ${totalWon.toLocaleString('id-ID')}. Setiap pesan yang kamu berikan HARUS diakhiri dengan ucapan Selamat Hari Raya Idul Fitri yang tulus dan personal (misal: mohon maaf lahir dan batin).` }] }]
                     })
                 });
                 currentMessage = res.candidates?.[0]?.content?.parts?.[0]?.text || "Hore! Selamat ya atas THR-nya! Jangan lupa ditabung ya. Selamat Hari Raya Idul Fitri, mohon maaf lahir dan batin!";
