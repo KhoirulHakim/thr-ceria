@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#00f2fe">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="THR Spinner">
+    <title>Spinner THR Anak Ceria ✨</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            touch-action: manipulation;
+        }
+
+        .bouncy-title {
+            font-family: 'Fredoka One', cursive;
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+        }
+
+        .spinner-container {
+            position: relative;
+            width: 290px;
+            height: 290px;
+            @media (min-width: 400px) { width: 340px; height: 340px; }
+            @media (min-width: 640px) { width: 550px; height: 550px; }
+        }
+
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid #ffffff;
+            @media (min-width: 640px) { border: 12px solid #ffffff; }
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 0 20px rgba(255,255,255,0.5);
+            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 40;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+            width: 50px;
+            @media (min-width: 640px) { width: 60px; top: -25px; }
+        }
+
+        .center-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 75px;
+            height: 75px;
+            @media (min-width: 640px) { width: 100px; height: 100px; }
+            background: #FFDD00;
+            border-radius: 50%;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fredoka One', cursive;
+            font-size: 13px;
+            @media (min-width: 640px) { font-size: 16px; }
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 0px #d4b800, 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.1s;
+            border: 4px solid #fff;
+            color: #ff5e00;
+            line-height: 1.2;
+        }
+
+        .center-button:active { transform: translate(-50%, -45%) scale(0.95); }
+
+        .banknote {
+            width: 55px; height: 28px;
+            @media (min-width: 640px) { width: 85px; height: 44px; }
+            background: #d4d8a0; 
+            border: 1px solid #9ea36d;
+            border-radius: 3px;
+            position: relative;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            overflow: hidden;
+            background-image: 
+                repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 4px),
+                radial-gradient(circle at 70% 50%, #e1e4b8 20%, transparent 21%);
+        }
+
+        .banknote-val-top { position: absolute; left: 2px; top: 1px; font-size: 5px; @media (min-width: 640px) { font-size: 7px; left: 4px; top: 2px; } font-weight: 900; color: #5a5f36; }
+        .banknote-val-main { position: absolute; right: 3px; bottom: 1px; font-size: 9px; @media (min-width: 640px) { font-size: 14px; right: 6px; bottom: 4px; } font-weight: 900; color: #4a4f26; font-family: serif; }
+        .banknote-portrait { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 14px; height: 18px; @media (min-width: 640px) { left: 10px; width: 20px; height: 26px; } background: #9ea36d; border-radius: 40% 40% 50% 50%; }
+
+        #modal { display: none; backdrop-filter: blur(8px); }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .brand-badge {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            padding: 6px 12px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            font-size: 10px;
+            @media (min-width: 640px) { font-size: 12px; padding: 8px 16px; }
+            font-weight: 700;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .wave-container { display: flex; align-items: center; justify-content: center; gap: 3px; height: 20px; }
+        .wave-bar { width: 3px; height: 5px; background: #3b82f6; border-radius: 10px; animation: wave 1s ease-in-out infinite; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        @keyframes wave { 0%, 100% { height: 5px; } 50% { height: 15px; } }
+
+        .sound-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            cursor: pointer;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4">
+
+    <div id="soundToggle" class="sound-toggle">🔊</div>
+
+    <div class="brand-badge">
+        <span class="opacity-80 text-[8px] sm:text-[10px]">Created by</span>
+        <span class="text-white">Khoirul Hakim</span>
+    </div>
+
+    <div class="text-center mb-4 sm:mb-6 z-10">
+        <h1 class="text-3xl sm:text-6xl text-white bouncy-title tracking-wide mb-1 sm:mb-2 uppercase">🎈 THR CERIA 🎈</h1>
+        <p class="text-white font-bold text-sm sm:text-lg bg-white/20 px-4 py-1 rounded-full backdrop-blur-sm">Ayo Putar & Dapatkan Hadiahmu!</p>
+        <div id="quotaDisplay" class="mt-2 sm:mt-4 inline-block bg-white text-blue-500 font-black px-4 sm:px-6 py-1 sm:py-2 rounded-2xl shadow-lg text-lg sm:text-xl border-2 sm:border-4 border-blue-100 transition-all">
+            Sisa Putaran: 2x
+        </div>
+    </div>
+
+    <div class="spinner-container z-10">
+        <div class="pointer">
+            <svg viewBox="0 0 24 24" fill="#FFD700" stroke="#FFFFFF" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+        </div>
+        <div id="wheel"></div>
+        <button id="spinBtn" class="center-button">PUTAR!</button>
+    </div>
+
+    <div id="totalRunningDisplay" class="mt-4 sm:mt-6 z-10 bg-orange-400 text-white font-black px-6 sm:px-8 py-1 sm:py-2 rounded-full shadow-lg text-md sm:text-lg border-2 border-white">
+        Total: Rp 0
+    </div>
+
+    <div id="modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-blue-900/40">
+        <div class="bg-white rounded-[40px] p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border-8 border-yellow-300 transform transition-all overflow-y-auto max-h-[90vh]">
+            <div id="modalEmoji" class="text-5xl sm:text-6xl mb-4">🥳</div>
+            <h2 id="modalTitle" class="text-2xl sm:text-3xl font-black text-blue-600 mb-2 bouncy-title uppercase">HOREEEE!</h2>
+            <p id="modalDesc" class="text-gray-500 font-bold mb-4 text-xs sm:text-sm">Kamu dapat THR sebanyak:</p>
+            
+            <div id="prizeResult" class="text-3xl sm:text-4xl font-black text-orange-500 mb-6 drop-shadow-sm">Rp 1.000</div>
+            
+            <div id="moneyStackDisplay" class="flex flex-wrap justify-center gap-2 mb-4 min-h-[40px]"></div>
+
+            <!-- TTS Section -->
+            <div id="aiSection" class="hidden bg-blue-50 border-2 border-blue-100 p-4 rounded-2xl mb-6 shadow-inner text-left relative">
+                <div class="text-[10px] text-blue-400 font-black uppercase tracking-widest mb-2 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                        Pesan Hangat ✨
+                    </div>
+                    <div id="voiceWave" class="wave-container hidden">
+                        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                    </div>
+                </div>
+                <div id="aiLoading" class="text-blue-300 font-bold text-xs italic text-center py-2">
+                    <span class="loader"></span> Menyiapkan pesan suara...
+                </div>
+                <div id="aiText" class="text-blue-800 font-black italic text-xs sm:text-sm leading-relaxed mb-2"></div>
+                <div id="aiError" class="hidden text-red-500 text-[10px] text-center mb-2">Gagal memutar suara. Coba lagi nanti.</div>
+                <button id="retryVoice" class="hidden mt-3 w-full bg-blue-500 hover:bg-blue-600 py-2 rounded-xl text-white font-black text-xs transition-all flex items-center justify-center gap-2 shadow-md">
+                    🔊 Dengarkan Pesan Lagi
+                </button>
+            </div>
+
+            <p id="quotaNotice" class="text-blue-500 font-bold mb-6 text-xs"></p>
+            <button id="modalBtn" class="w-full py-3 sm:py-4 bg-gradient-to-b from-yellow-300 to-yellow-500 text-orange-700 font-black text-lg sm:text-xl rounded-2xl shadow-[0_4px_0_#d4b800] active:translate-y-1 transition-all">
+                OKE, TERIMA KASIH! 🎁
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; 
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let isMuted = false;
+
+        function createSound(freq, duration, type = 'sine', volume = 0.3, slide = 0) {
+            if(isMuted) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            if (slide !== 0) osc.frequency.exponentialRampToValueAtTime(Math.max(1, freq + slide), audioCtx.currentTime + duration);
+            gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        }
+
+        const sounds = {
+            click: () => createSound(800, 0.1, 'square', 0.1),
+            pop: () => { createSound(400, 0.1, 'sine', 0.3); setTimeout(() => createSound(600, 0.1, 'sine', 0.2), 50); },
+            tick: (isHeavy = false) => createSound(isHeavy ? 150 : 300, 0.05, 'triangle', isHeavy ? 0.2 : 0.1),
+            spinStart: () => createSound(200, 0.5, 'sawtooth', 0.2, 400),
+            winShort: () => [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => createSound(f, 0.4, 'sine', 0.3), i * 80)),
+            fanfare: () => {
+                [261, 329, 392, 523, 659, 783, 1046].forEach((f, i) => setTimeout(() => createSound(f, 0.1, 'triangle', 0.2), i * 30));
+                const playChord = (f, d, dur) => setTimeout(() => f.forEach(n => createSound(n, dur, 'square', 0.15)), d);
+                playChord([261, 329, 392], 400, 0.4); playChord([349, 440, 523], 800, 0.4); playChord([523, 659, 783, 1046], 1200, 1.5);
+            }
+        };
+
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spinBtn');
+        const prizeResult = document.getElementById('prizeResult');
+        const moneyStackDisplay = document.getElementById('moneyStackDisplay');
+        const modal = document.getElementById('modal');
+        const quotaDisplay = document.getElementById('quotaDisplay');
+        const totalRunningDisplay = document.getElementById('totalRunningDisplay');
+        const aiSection = document.getElementById('aiSection');
+        const aiText = document.getElementById('aiText');
+        const aiLoading = document.getElementById('aiLoading');
+        const aiError = document.getElementById('aiError');
+        const retryVoice = document.getElementById('retryVoice');
+        const voiceWave = document.getElementById('voiceWave');
+        const soundToggle = document.getElementById('soundToggle');
+
+        const prizes = [
+            { label: "1.000", count: 1, color: "#FF85A1", value: 1000 },
+            { label: "2.000", count: 2, color: "#4DB6AC", value: 2000 },
+            { label: "3.000", count: 3, color: "#FFD54F", value: 3000 },
+            { label: "4.000", count: 4, color: "#9575CD", value: 4000 },
+            { label: "5.000", count: 5, color: "#81C784", value: 5000 }
+        ];
+
+        let currentRotation = 0, isSpinning = false, spinsRemaining = 2, totalWon = 0, currentMessage = "", lastTickAngle = -1;
+
+        soundToggle.onclick = () => { isMuted = !isMuted; soundToggle.innerText = isMuted ? "🔇" : "🔊"; sounds.click(); };
+
+        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error("Fetch failed");
+                return await response.json();
+            } catch (err) {
+                if (retries > 0) {
+                    await new Promise(r => setTimeout(r, backoff));
+                    return fetchWithRetry(url, options, retries - 1, backoff * 2);
+                }
+                throw err;
+            }
+        }
+
+        async function speak(text) {
+            if (!text || isMuted) return;
+            voiceWave.classList.remove('hidden');
+            aiError.classList.add('hidden');
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{ parts: [{ text: `Ucapkan pesan ini dengan sangat hangat dan penuh semangat untuk anak: ${text}` }] }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } } }
+                    }
+                };
+                const result = await fetchWithRetry(url, { method: "POST", body: JSON.stringify(payload) });
+                const inlineData = result.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+                if (!inlineData) throw new Error("No audio data");
+
+                const pcmData = inlineData.data;
+                const sampleRate = 24000; 
+
+                const pcmBytes = Uint8Array.from(atob(pcmData), c => c.charCodeAt(0));
+                const wavBlob = pcmToWav(pcmBytes, sampleRate);
+                const audio = new Audio(URL.createObjectURL(wavBlob));
+
+                if (audioCtx.state === 'suspended') await audioCtx.resume();
+                audio.onended = () => voiceWave.classList.add('hidden');
+                await audio.play();
+                retryVoice.classList.remove('hidden');
+            } catch (e) {
+                voiceWave.classList.add('hidden');
+                aiError.classList.remove('hidden');
+                retryVoice.classList.remove('hidden');
+            }
+        }
+
+        function pcmToWav(pcmBytes, sampleRate) {
+            const buffer = new ArrayBuffer(44 + pcmBytes.length);
+            const view = new DataView(buffer);
+            const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+            writeStr(0, 'RIFF'); view.setUint32(4, 36 + pcmBytes.length, true);
+            writeStr(8, 'WAVE'); writeStr(12, 'fmt '); view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+            writeStr(36, 'data'); view.setUint32(40, pcmBytes.length, true);
+            new Uint8Array(buffer, 44).set(pcmBytes);
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        retryVoice.onclick = () => { sounds.click(); speak(currentMessage); };
+
+        function initWheel() {
+            const angleStep = 360 / prizes.length;
+            wheel.innerHTML = '';
+            prizes.forEach((prize, i) => {
+                const rot = i * angleStep;
+                const seg = document.createElement('div');
+                seg.className = 'absolute inset-0';
+                seg.style.background = `conic-gradient(from ${rot}deg, ${prize.color} 0deg, ${prize.color} ${angleStep}deg, transparent ${angleStep}deg)`;
+                wheel.appendChild(seg);
+                const container = document.createElement('div');
+                container.style.position = 'absolute'; container.style.width = '100%'; container.style.height = '100%';
+                container.style.transform = `rotate(${rot + (angleStep / 2)}deg)`;
+                const content = document.createElement('div');
+                content.className = 'flex flex-col items-center justify-start pt-4 sm:pt-10 text-white';
+                const l = document.createElement('div'); l.className = 'text-3xl sm:text-6xl font-black mb-2 sm:mb-6 drop-shadow-lg'; l.innerText = prize.label;
+                const m = document.createElement('div'); m.className = 'relative h-10 w-20 sm:h-16 sm:w-24 flex items-center justify-center';
+                for(let j=0; j<prize.count; j++) {
+                    const n = document.createElement('div'); n.className = 'absolute';
+                    n.style.transform = `translateY(${j * (window.innerWidth < 640 ? -4 : -6)}px) rotate(${j * 3}deg)`;
+                    n.innerHTML = `<div class="banknote"><div class="banknote-val-top">1000</div><div class="banknote-portrait"></div><div class="banknote-val-main">1000</div></div>`;
+                    m.appendChild(n);
+                }
+                content.appendChild(l); content.appendChild(m); container.appendChild(content); wheel.appendChild(container);
+            });
+            updateUI();
+        }
+
+        function updateUI() {
+            quotaDisplay.innerText = `Sisa Putaran: ${spinsRemaining}x`;
+            totalRunningDisplay.innerText = `Total: Rp ${totalWon.toLocaleString('id-ID')}`;
+            spinBtn.innerHTML = spinsRemaining <= 0 ? "SPIN<br>BARU" : "PUTAR!";
+            spinBtn.classList.toggle('reset-mode', spinsRemaining <= 0);
+        }
+
+        function spin() {
+            if (isSpinning) return;
+            audioCtx.resume();
+            if (spinsRemaining <= 0) {
+                sounds.pop(); spinsRemaining = 2; totalWon = 0; currentRotation = 0; wheel.style.transform = `rotate(0deg)`;
+                aiSection.classList.add('hidden'); updateUI(); return;
+            }
+            sounds.spinStart(); isSpinning = true; spinBtn.disabled = true; spinsRemaining--; updateUI();
+            const total = (8 + Math.floor(Math.random() * 4)) * 360;
+            currentRotation += total + (360 - (currentRotation % 360)) + Math.floor(Math.random() * 360);
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+            lastTickAngle = -1;
+            (function tickLoop() {
+                if (!isSpinning) return;
+                const st = window.getComputedStyle(wheel);
+                const mat = new WebKitCSSMatrix(st.transform);
+                const ang = Math.round(Math.atan2(mat.b, mat.a) * (180 / Math.PI));
+                const n = (ang + 360) % 360;
+                const cs = Math.floor(n / (360 / prizes.length));
+                if (cs !== lastTickAngle) { sounds.tick(cs % 2 === 0); lastTickAngle = cs; }
+                requestAnimationFrame(tickLoop);
+            })();
+            setTimeout(() => {
+                isSpinning = false;
+                const idx = Math.floor(((360 - (currentRotation % 360)) % 360) / (360 / prizes.length));
+                totalWon += prizes[idx].value;
+                showResult(prizes[idx]);
+            }, 4100);
+        }
+
+        function showResult(prize) {
+            sounds.winShort();
+            prizeResult.innerText = `Rp ${prize.label}`; prizeResult.style.color = prize.color;
+            moneyStackDisplay.innerHTML = '';
+            for(let i=0; i<prize.count; i++) {
+                const n = document.createElement('div'); n.style.transform = `rotate(${Math.random()*20-10}deg)`;
+                n.innerHTML = `<div class="banknote"><div class="banknote-val-top">1000</div><div class="banknote-portrait"></div><div class="banknote-val-main">1000</div></div>`;
+                moneyStackDisplay.appendChild(n);
+            }
+            const isLast = spinsRemaining <= 0;
+            document.getElementById('modalTitle').innerText = isLast ? "PUTARAN 2" : "PUTARAN 1";
+            document.getElementById('quotaNotice').innerText = isLast ? "Wah, putaran terakhir!" : "Satu kesempatan lagi!";
+            document.getElementById('modalBtn').innerText = isLast ? "LIHAT TOTAL AKHIR ✨" : "PUTAR LAGI! 🎁";
+            document.getElementById('modalBtn').onclick = () => { sounds.click(); isLast ? showFinal() : (modal.style.display = 'none', spinBtn.disabled = false); };
+            modal.style.display = 'flex';
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+
+        async function showFinal() {
+            sounds.fanfare();
+            document.getElementById('modalEmoji').innerText = "💰";
+            document.getElementById('modalTitle').innerText = "TOTAL THR!";
+            prizeResult.innerText = `Rp ${totalWon.toLocaleString('id-ID')}`; prizeResult.style.color = "#f97316";
+            aiSection.classList.remove('hidden'); aiLoading.classList.remove('hidden'); aiText.innerText = "";
+            moneyStackDisplay.innerHTML = '';
+            for(let i=0; i<Math.min(totalWon/1000, 15); i++) {
+                const n = document.createElement('div'); n.style.transform = `rotate(${Math.random()*40-20}deg)`;
+                n.innerHTML = `<div class="banknote"><div class="banknote-val-top">1000</div><div class="banknote-portrait"></div><div class="banknote-val-main">1000</div></div>`;
+                moneyStackDisplay.appendChild(n);
+            }
+            document.getElementById('modalBtn').innerText = "MAIN LAGI 🔄";
+            document.getElementById('modalBtn').onclick = () => { location.reload(); };
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const res = await fetchWithRetry(url, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Berikan pesan selamat singkat, hangat, dan nasihat menabung untuk anak yang dapat THR Rp ${totalWon.toLocaleString('id-ID')}. Jangan sebut namamu. Selalu akhiri pesanmu dengan ucapan Selamat Hari Raya Idul Fitri yang sangat hangat dan personal.` }] }],
+                        systemInstruction: { parts: [{ text: "Kamu adalah kakak yang sangat ramah bagi anak Indonesia. Jangan sebut namamu. Setiap pesan yang kamu berikan HARUS diakhiri dengan ucapan Selamat Hari Raya Idul Fitri yang tulus dan personal (misal: mohon maaf lahir dan batin)." }] }
+                    })
+                });
+                currentMessage = res.candidates?.[0]?.content?.parts?.[0]?.text || "Hore! Selamat ya atas THR-nya! Jangan lupa ditabung ya. Selamat Hari Raya Idul Fitri, mohon maaf lahir dan batin!";
+                aiLoading.classList.add('hidden'); aiText.innerText = currentMessage;
+                speak(currentMessage);
+            } catch(e) { 
+                aiLoading.classList.add('hidden'); 
+                aiText.innerText = "Selamat ya atas THR-nya! Selamat Hari Raya Idul Fitri, mohon maaf lahir dan batin!"; 
+            }
+        }
+
+        spinBtn.addEventListener('click', spin);
+        window.onload = initWheel;
+    </script>
+</body>
+</html>
