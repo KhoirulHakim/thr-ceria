@@ -231,7 +231,7 @@
     </div>
 
     <script>
-        const apiKey = "AIzaSyBpVtpE_ywxD58x9-3xWScHFG7b9A37JwA"; 
+        const apiKey = "AIzaSyDC5kuFy7G6rAN6rcINvy-JE2TkKkTP7TA"; 
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         let isMuted = false;
@@ -308,7 +308,7 @@
             voiceWave.classList.remove('hidden');
             aiError.classList.add('hidden');
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
                 const payload = {
                     contents: [{ parts: [{ text: `Ucapkan pesan ini dengan sangat hangat dan penuh semangat untuk anak: ${text}` }] }],
                     generationConfig: {
@@ -459,7 +459,7 @@
             }
 
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
                 const res = await fetchWithRetry(url, {
                     method: "POST",
                     body: JSON.stringify({
