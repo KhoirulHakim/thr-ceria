@@ -231,7 +231,7 @@
     </div>
 
     <script>
-        const apiKey = "AIzaSyDC5kuFy7G6rAN6rcINvy-JE2TkKkTP7TA"; 
+        const apiKey = "AIzaSyClTy6mbjf7Rv0USqQXMCUm9Y2otW77A54"; 
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         let isMuted = false;
@@ -304,52 +304,28 @@
         }
 
         async function speak(text) {
-            if (!text || isMuted) return;
+            if (!text || isMuted || !('speechSynthesis' in window)) return;
             voiceWave.classList.remove('hidden');
             aiError.classList.add('hidden');
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                const payload = {
-                    contents: [{ parts: [{ text: `Ucapkan pesan ini dengan sangat hangat dan penuh semangat untuk anak: ${text}` }] }],
-                    generationConfig: {
-                        responseModalities: ["AUDIO"],
-                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } } }
-                    }
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID'; // Bahasa Indonesia
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                utterance.volume = 0.8;
+                utterance.onend = () => voiceWave.classList.add('hidden');
+                utterance.onerror = () => {
+                    voiceWave.classList.add('hidden');
+                    aiError.classList.remove('hidden');
+                    retryVoice.classList.remove('hidden');
                 };
-                const result = await fetchWithRetry(url, { method: "POST", body: JSON.stringify(payload) });
-                const inlineData = result.candidates?.[0]?.content?.parts?.[0]?.inlineData;
-                if (!inlineData) throw new Error("No audio data");
-
-                const pcmData = inlineData.data;
-                const sampleRate = 24000; 
-
-                const pcmBytes = Uint8Array.from(atob(pcmData), c => c.charCodeAt(0));
-                const wavBlob = pcmToWav(pcmBytes, sampleRate);
-                const audio = new Audio(URL.createObjectURL(wavBlob));
-
-                if (audioCtx.state === 'suspended') await audioCtx.resume();
-                audio.onended = () => voiceWave.classList.add('hidden');
-                await audio.play();
+                window.speechSynthesis.speak(utterance);
                 retryVoice.classList.remove('hidden');
             } catch (e) {
                 voiceWave.classList.add('hidden');
                 aiError.classList.remove('hidden');
                 retryVoice.classList.remove('hidden');
             }
-        }
-
-        function pcmToWav(pcmBytes, sampleRate) {
-            const buffer = new ArrayBuffer(44 + pcmBytes.length);
-            const view = new DataView(buffer);
-            const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
-            writeStr(0, 'RIFF'); view.setUint32(4, 36 + pcmBytes.length, true);
-            writeStr(8, 'WAVE'); writeStr(12, 'fmt '); view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-            view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
-            view.setUint16(32, 2, true); view.setUint16(34, 16, true);
-            writeStr(36, 'data'); view.setUint32(40, pcmBytes.length, true);
-            new Uint8Array(buffer, 44).set(pcmBytes);
-            return new Blob([buffer], { type: 'audio/wav' });
         }
 
         retryVoice.onclick = () => { sounds.click(); speak(currentMessage); };
